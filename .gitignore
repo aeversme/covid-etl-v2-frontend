@@ -1,2 +1,4 @@
 venv/
 .idea/
+app/__pycache__/
+app/modules/__pycache__/
