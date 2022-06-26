@@ -2,18 +2,23 @@ import pydeck as pdk
 from re import search
 
 
-def get_coordinates(df, location='United States'):
+def set_map_state(df, location='United States'):
     for index in df.index:
         if search(location, df['location'][index]):
-            return {'lat': df.lat[index], 'lon': df.lon[index]}
+            zoom = 2.5
+            pitch = 0
+            if location != 'United States':
+                zoom = 6
+                pitch = 30
+            return {'lat': df.lat[index], 'lon': df.lon[index], 'zoom': zoom, 'pitch': pitch}
 
 
-def create_map(geojson_data, location):
-    view_state = pdk.ViewState(latitude=location['lat'],
-                               longitude=location['lon'],
-                               zoom=2.5,
+def create_map(geojson_data, map_state):
+    view_state = pdk.ViewState(latitude=map_state['lat'],
+                               longitude=map_state['lon'],
+                               zoom=map_state['zoom'],
                                bearing=0,
-                               pitch=0
+                               pitch=map_state['pitch']
                                )
 
     geojson_layer = pdk.Layer('GeoJsonLayer',

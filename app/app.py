@@ -57,9 +57,11 @@ if st.sidebar.checkbox('Rolling averages'):
 display_metrics(metric_type)
 
 geo_centers = load_geo_centers(data_sources.GEO_CENTERS)
+location = st.sidebar.selectbox('View data by state:', geo_centers)
 states_geojson = data_handler.load_json(data_sources.STATES_GEOJSON)
-map_center = map_handler.get_coordinates(geo_centers)
-covid_map = map_handler.create_map(states_geojson, map_center)
+map_state = map_handler.set_map_state(geo_centers, location)
+covid_map = map_handler.create_map(states_geojson, map_state)
+
 st.pydeck_chart(covid_map)
 
 st.sidebar.markdown('_App last updated: June 20, 2022_')
