@@ -1,10 +1,15 @@
 import streamlit as st
-from modules import data_handler, metrics, data_sources
+from modules import data_handler, metrics, data_sources, map_handler
 
 
 @st.cache
 def load_covid_data(url_list):
     return [data_handler.import_data(url) for url in url_list]
+
+
+@st.cache
+def load_geo_centers(url):
+    return data_handler.import_data(url, filter_df=False)
 
 
 def display_metrics(metric):
@@ -50,5 +55,11 @@ if st.sidebar.checkbox('Rolling averages'):
     metric_type = 'rolling'
 
 display_metrics(metric_type)
+
+geo_centers = load_geo_centers(data_sources.GEO_CENTERS)
+states_geojson = data_handler.load_json(data_sources.STATES_GEOJSON)
+map_center = map_handler.get_coordinates(geo_centers)
+covid_map = map_handler.create_map(states_geojson, map_center)
+st.pydeck_chart(covid_map)
 
 st.sidebar.markdown('_App last updated: June 20, 2022_')

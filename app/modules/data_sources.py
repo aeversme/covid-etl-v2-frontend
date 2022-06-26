@@ -18,6 +18,7 @@ COUNTY_2022_ROLLING = "https://raw.githubusercontent.com/nytimes/covid-19-data/m
 
 STATES_GEOJSON = "https://eric.clst.org/assets/wiki/uploads/Stuff/gz_2010_us_040_00_5m.json"
 COUNTIES_GEOJSON = "https://eric.clst.org/assets/wiki/uploads/Stuff/gz_2010_us_050_00_5m.json"
+GEO_CENTERS = "https://raw.githubusercontent.com/aeversme/us-state-geocenters/main/geo_centers.csv"
 
 US_STATES_LIST = [US_DATA,
                   STATE_DATA,
