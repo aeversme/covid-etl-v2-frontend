@@ -3,4 +3,3 @@ venv/
 app/__pycache__/
 app/modules/__pycache__/
 app/.streamlit/config.toml
-app/scratch.py

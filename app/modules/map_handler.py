@@ -11,7 +11,7 @@ def set_map_state(df, location='United States'):
             if location != 'United States':
                 state = f"{int(df['state'][index]):02d}"
                 zoom = 5.5
-                # pitch = 15
+                # pitch = 30
             return {'location': location,
                     'state': state,
                     'lat': df.lat[index],
