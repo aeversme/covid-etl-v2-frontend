@@ -32,6 +32,25 @@ def display_metrics(metric):
                 delta_color='inverse')
 
 
+def data_to_map(met_type, loc):
+    co_data = None
+    geo_j = None
+
+    if met_type == 'rolling' and loc != 'United States':
+        co_data = states_rolling
+        geo_j = counties_geojson
+    elif loc != 'United States':
+        co_data = states_data
+        geo_j = counties_geojson
+    elif met_type == 'rolling':
+        co_data = us_rolling
+        geo_j = states_geojson
+    else:
+        co_data = us_data
+        geo_j = states_geojson
+
+    return [co_data, geo_j]
+
 subtitle_markdown = """
 _A Python ETL project on AWS_
 ***
@@ -48,6 +67,7 @@ data_load_state = st.sidebar.text('Loading data and caching...')
 us_data, states_data, us_rolling, states_rolling = load_covid_data(data_sources.US_STATES_LIST)
 geo_centers = load_geo_centers(data_sources.GEO_CENTERS)
 states_geojson = data_handler.load_json(data_sources.STATES_GEOJSON)
+counties_geojson = data_handler.load_json(data_sources.COUNTIES_GEOJSON)
 
 data_load_state.text('Data loaded and cached!')
 
@@ -60,8 +80,9 @@ display_metrics(metric_type)
 
 location = st.sidebar.selectbox('View data by state:', geo_centers)
 map_state = map_handler.set_map_state(geo_centers, location)
-covid_map = map_handler.create_map(states_geojson, map_state)
+covid_data, geo_json = data_to_map(metric_type, location)
+covid_map = map_handler.create_map(geo_json, map_state)
 
 st.pydeck_chart(covid_map)
 
-st.sidebar.markdown('_App last updated: June 25, 2022_')
+st.sidebar.markdown('_App last updated: June 26, 2022_')

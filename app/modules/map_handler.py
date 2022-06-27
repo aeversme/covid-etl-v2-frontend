@@ -5,15 +5,30 @@ from re import search
 def set_map_state(df, location='United States'):
     for index in df.index:
         if search(location, df['location'][index]):
+            state = None
             zoom = 2.5
             pitch = 0
             if location != 'United States':
-                zoom = 6
-                pitch = 30
-            return {'lat': df.lat[index], 'lon': df.lon[index], 'zoom': zoom, 'pitch': pitch}
+                state = f"{int(df['state'][index]):02d}"
+                zoom = 5.5
+                # pitch = 15
+            return {'location': location,
+                    'state': state,
+                    'lat': df.lat[index],
+                    'lon': df.lon[index],
+                    'zoom': zoom,
+                    'pitch': pitch}
 
 
 def create_map(geojson_data, map_state):
+    state = map_state['state']
+    if state is not None:
+        features = []
+        for feature in geojson_data['features']:
+            if feature['properties']['STATE'] == state:
+                features.append(feature)
+        geojson_data = features
+
     view_state = pdk.ViewState(latitude=map_state['lat'],
                                longitude=map_state['lon'],
                                zoom=map_state['zoom'],
@@ -23,7 +38,7 @@ def create_map(geojson_data, map_state):
 
     geojson_layer = pdk.Layer('GeoJsonLayer',
                               geojson_data,
-                              opacity=0.8,
+                              opacity=0.5,
                               stroked=True,
                               filled=True,
                               extruded=True,
