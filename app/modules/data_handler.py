@@ -23,3 +23,21 @@ def load_json(url):
         except requests.exceptions.ContentDecodingError:
             print("JSON could not be decoded.")
     return json
+
+
+def get_latest_date(column):
+    return column.max()
+
+
+# TODO: convert to using latest date - add dataframe to parameters, call get_latest_date
+def get_latest_data(column):
+    data = column.iat[-1]
+    return '{:,}'.format(data)
+
+
+# TODO: convert to using latest date and day-1 - add dataframe to parameters, call get_latest_date
+def get_delta(column, metric_type=None):
+    delta = column.iat[-1] - column.iat[-2]
+    if metric_type == 'rolling':
+        return '{:.2f}'.format(delta)
+    return '{:,}'.format(delta)
