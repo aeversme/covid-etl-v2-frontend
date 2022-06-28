@@ -1,4 +1,5 @@
 import streamlit as st
+import json
 from modules import data_handler as dh, data_sources as ds, map_handler as mh
 
 
@@ -12,23 +13,29 @@ def load_geo_centers(url):
     return dh.import_data(url, filter_df=False)
 
 
+def load_json_data(files):
+    return [json.load(open(file)) for file in files]
+
+
 def display_metrics(metric):
     title_type = '(Total)'
-    cases = us_data['cases']
-    deaths = us_data['deaths']
+    dataframe = us_data
+    cases_label = 'cases'
+    deaths_label = 'deaths'
     if metric == 'rolling':
         title_type = '(Average per 100,000 people)'
-        cases = us_rolling['cases_avg_per_100k']
-        deaths = us_rolling['deaths_avg_per_100k']
+        dataframe = us_rolling
+        cases_label = 'cases_avg_per_100k'
+        deaths_label = 'deaths_avg_per_100k'
     col1, col2, col3 = st.columns(3)
-    col1.metric('Latest Data', dh.get_latest_date(us_data['date']).date().strftime('%b %d, %Y'))
+    col1.metric('Latest Data', dh.get_latest_date(dataframe).date().strftime('%b %d, %Y'))
     col2.metric(f'US Cases {title_type}',
-                dh.get_latest_data(cases),
-                delta=dh.get_delta(cases, metric),
+                dh.format_metric(dh.get_latest_metric(cases_label, dataframe), metric),
+                delta=dh.format_metric(dh.get_delta(cases_label, dataframe), metric),
                 delta_color='inverse')
     col3.metric(f'US Deaths {title_type}',
-                dh.get_latest_data(deaths),
-                delta=dh.get_delta(deaths, metric),
+                dh.format_metric(dh.get_latest_metric(deaths_label, dataframe), metric),
+                delta=dh.format_metric(dh.get_delta(deaths_label, dataframe), metric),
                 delta_color='inverse')
 
 
@@ -45,7 +52,6 @@ def data_to_map(met_type, loc):
     else:
         co_data = us_data
         geo_j = states_geojson
-
     return [co_data, geo_j]
 
 
@@ -64,8 +70,7 @@ data_load_state = st.sidebar.text('Loading data and caching...')
 
 us_data, states_data, us_rolling, states_rolling = load_covid_data(ds.US_STATES_LIST)
 geo_centers = load_geo_centers(ds.GEO_CENTERS)
-states_geojson = dh.load_json(ds.STATES_GEOJSON)
-counties_geojson = dh.load_json(ds.COUNTIES_GEOJSON)
+states_geojson, counties_geojson = load_json_data(ds.JSON_FILES)
 
 data_load_state.text('Data loaded and cached!')
 

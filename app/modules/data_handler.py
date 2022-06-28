@@ -1,5 +1,5 @@
 import pandas as pd
-import requests
+import datetime
 
 
 def import_data(url, filter_df=True):
@@ -14,30 +14,28 @@ def filter_data(df):
     return df
 
 
-def load_json(url):
-    json = None
-    response = requests.get(url)
-    if response.raise_for_status() is None:
-        try:
-            json = response.json()
-        except requests.exceptions.ContentDecodingError:
-            print("JSON could not be decoded.")
-    return json
+def get_latest_date(df):
+    return df['date'].max()
 
 
-def get_latest_date(column):
-    return column.max()
+def get_associated_value(date, column_label, df):
+    return df.loc[df['date'] == date, column_label].values[0]
 
 
-# TODO: convert to using latest date - add dataframe to parameters, call get_latest_date
-def get_latest_data(column):
-    data = column.iat[-1]
-    return '{:,}'.format(data)
+def get_latest_metric(column_label, df):
+    latest_date = get_latest_date(df)
+    return get_associated_value(latest_date, column_label, df)
 
 
-# TODO: convert to using latest date and day-1 - add dataframe to parameters, call get_latest_date
-def get_delta(column, metric_type=None):
-    delta = column.iat[-1] - column.iat[-2]
+def get_delta(column_label, df):
+    latest_date = get_latest_date(df)
+    previous_date = latest_date + datetime.timedelta(days=-1)
+    latest_value = df.loc[df['date'] == latest_date, column_label].values[0]
+    previous_value = df.loc[df['date'] == previous_date, column_label].values[0]
+    return latest_value - previous_value
+
+
+def format_metric(metric, metric_type):
     if metric_type == 'rolling':
-        return '{:.2f}'.format(delta)
-    return '{:,}'.format(delta)
+        return '{:.2f}'.format(metric)
+    return '{:,}'.format(metric)
