@@ -1,6 +1,6 @@
 import streamlit as st
 import json
-from modules import data_handler as dh, data_sources as ds, map_handler as mh
+from modules import data_handler as dh, data_sources as ds, map_handler as mh, markdown as md
 
 
 @st.cache
@@ -55,14 +55,9 @@ def data_to_map(met_type, loc):
     return [co_data, geo_j]
 
 
-subtitle_markdown = """
-_A Python ETL project on AWS_
-***
-"""
-
 st.set_page_config(page_title='US & State Covid-19 Data', layout='wide')
 st.title('US & State Covid-19 Data')
-st.markdown(subtitle_markdown)
+st.markdown(md.subtitle_markdown)
 
 st.sidebar.title('Utilities')
 st.sidebar.markdown('_Data processing status:_')
@@ -87,5 +82,6 @@ covid_data, geo_json = data_to_map(metric_type, location)
 covid_map = mh.create_map(geo_json, map_state)
 
 st.pydeck_chart(covid_map)
+st.markdown(md.map_credit)
 
 st.sidebar.markdown('_App last updated: June 27, 2022_')
