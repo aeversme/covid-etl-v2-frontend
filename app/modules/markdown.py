@@ -9,3 +9,7 @@ subtitle_markdown = """
 _A Python ETL project on AWS_
 ***
 """
+
+map_markdown = """
+_Mouse wheel to ZOOM | drag to PAN | hold `SHIFT` and drag to ROTATE/TILT_
+"""

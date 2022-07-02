@@ -1,5 +1,4 @@
 import streamlit as st
-import json
 from modules import data_handler as dh, data_sources as ds, map_handler as mh, markdown as md
 
 
@@ -11,10 +10,6 @@ def load_covid_data(url_list):
 @st.cache
 def load_geo_centers(url):
     return dh.import_data(url, filter_df=False)
-
-
-def load_json_data(files):
-    return [json.load(open(file)) for file in files]
 
 
 def display_metrics(metric):
@@ -65,7 +60,7 @@ data_load_state = st.sidebar.text('Loading data and caching...')
 
 us_data, states_data, us_rolling, states_rolling = load_covid_data(ds.US_STATES_LIST)
 geo_centers = load_geo_centers(ds.GEO_CENTERS)
-states_geojson, counties_geojson = load_json_data(ds.JSON_FILES)
+states_geojson, counties_geojson = dh.load_json_data(ds.JSON_FILES)
 
 data_load_state.text('Data loaded and cached!')
 
@@ -81,6 +76,7 @@ map_state = mh.set_map_state(geo_centers, location)
 covid_data, geo_json = data_to_map(metric_type, location)
 covid_map = mh.create_map(geo_json, map_state)
 
+st.markdown(md.map_markdown)
 st.pydeck_chart(covid_map)
 st.markdown(md.map_credit)
 
