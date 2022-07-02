@@ -36,16 +36,16 @@ def display_metrics(metric):
 
 def data_to_map(met_type, loc):
     if met_type == 'rolling' and loc != 'United States':
-        co_data = states_rolling
+        co_data = counties_rolling
         geo_j = counties_geojson
     elif loc != 'United States':
-        co_data = states_data
+        co_data = counties_data
         geo_j = counties_geojson
     elif met_type == 'rolling':
-        co_data = us_rolling
+        co_data = states_rolling
         geo_j = states_geojson
     else:
-        co_data = us_data
+        co_data = states_data
         geo_j = states_geojson
     return [co_data, geo_j]
 
@@ -59,6 +59,7 @@ st.sidebar.markdown('_Data processing status:_')
 data_load_state = st.sidebar.text('Loading data and caching...')
 
 us_data, states_data, us_rolling, states_rolling = load_covid_data(ds.US_STATES_LIST)
+counties_data, counties_rolling = load_covid_data(ds.COUNTIES_2022_LIST)
 geo_centers = load_geo_centers(ds.GEO_CENTERS)
 states_geojson, counties_geojson = dh.load_json_data(ds.JSON_FILES)
 
@@ -74,7 +75,8 @@ display_metrics(metric_type)
 location = st.sidebar.selectbox('View data by state:', geo_centers)
 map_state = mh.set_map_state(geo_centers, location)
 covid_data, geo_json = data_to_map(metric_type, location)
-covid_map = mh.create_map(geo_json, map_state)
+geo_json_with_data = dh.add_covid_data_to_json(covid_data, geo_json, location)
+covid_map = mh.create_map(geo_json_with_data, map_state)
 
 st.markdown(md.map_markdown)
 st.pydeck_chart(covid_map)

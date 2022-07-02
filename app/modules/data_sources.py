@@ -28,4 +28,5 @@ COUNTIES_LIST = [COUNTY_2020_DATA,
                  COUNTY_2020_ROLLING,
                  COUNTY_2021_ROLLING,
                  COUNTY_2022_ROLLING]
+COUNTIES_2022_LIST = [COUNTY_2022_DATA, COUNTY_2022_ROLLING]
 JSON_FILES = ['app/src/json/states.json', 'app/src/json/counties.json']

@@ -44,3 +44,18 @@ def format_metric(metric, metric_type):
     if metric_type == 'rolling':
         return '{:.2f}'.format(metric)
     return '{:,}'.format(metric)
+
+
+def add_covid_data_to_json(covid_data, geojson, location):
+    data_label = ['cases', 'deaths']
+    for feature in geojson['features']:
+        location_identifier = int(feature['properties']['STATE'])
+        if location != 'United States':
+            location_identifier = float(feature['properties']['STATE'] + feature['properties']['COUNTY'])
+        for label in data_label:
+            try:
+                feature['properties'][label.upper()] = str(covid_data.loc[covid_data['fips'] ==
+                                                                          location_identifier, label].values[-1])
+            except IndexError:
+                continue
+    return geojson
