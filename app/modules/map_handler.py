@@ -44,7 +44,7 @@ def create_map(geojson_data, map_state):
                               extruded=True,
                               wireframe=True,
                               # get_elevation='some_data_if_using_this',
-                              # get_fill_color='[255, 255, data_translated_to_255_scale]',
+                              get_fill_color='properties.casescolor',
                               get_line_color=[255, 255, 255],
                               pickable=True
                               )
