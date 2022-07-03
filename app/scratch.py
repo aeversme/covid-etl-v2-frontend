@@ -6,6 +6,7 @@ import matplotlib.pyplot as plt
 import datetime
 import json
 import requests
+import geopandas as gpd
 
 STATES_JSON_URL = "https://eric.clst.org/assets/wiki/uploads/Stuff/gz_2010_us_040_00_5m.json"
 COUNTIES_JSON_URL = "https://eric.clst.org/assets/wiki/uploads/Stuff/gz_2010_us_050_00_5m.json"
@@ -15,46 +16,13 @@ US_DATA = "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us.csv
 STATE_DATA = "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-states.csv"
 COUNTY_2022_DATA = "https://raw.githubusercontent.com/nytimes/covid-19-data/master/us-counties-2022.csv"
 
-COLORS = {
-    0: {
-        'red': 255,
-        'green': '255',
-        'blue': '255'
-    },
-    1: {
-        'red': 255,
-        'green': '186',
-        'blue': '186'
-    },
-    2: {
-        'red': 255,
-        'green': 123,
-        'blue': 123
-    },
-    3: {
-        'red': 255,
-        'green': '82',
-        'blue': '82'
-    },
-    4: {
-        'red': 255,
-        'green': '0',
-        'blue': '0'
-    },
-    5: {
-        'red': 167,
-        'green': '0',
-        'blue': '0'
-    }
-}
-
-COLORS_LISTS = {
-    0: [255, 255, 255],
-    1: [255, 186, 186],
-    2: [255, 123, 123],
-    3: [255, 82, 82],
-    4: [255, 0, 0],
-    5: [167, 0, 0]
+COLORS_DICT = {
+    0: '[255, 255, 255]',
+    1: '[255, 186, 186]',
+    2: '[255, 123, 123]',
+    3: '[255, 82, 82]',
+    4: '[255, 0, 0]',
+    5: '[167, 0, 0]'
 }
 
 
@@ -62,10 +30,10 @@ def set_color_from_data(data, label='cases'):
     data_range = [1, 2e+06, 4e+06, 6e+06, 8e+06]
     if label == 'deaths':
         data_range = [1, 2e+04, 4e+04, 6e+04, 8e+04]
-    color = COLORS[5]
+    color = COLORS_DICT[5]
     for i, num in enumerate(data_range):
         if int(data) > num:
-            color = COLORS_LISTS[i + 1]
+            color = COLORS_DICT[i + 1]
     return color
 
 
@@ -133,34 +101,32 @@ counties_json = get_json(COUNTIES_JSON_URL)
 
 def add_covid_data_to_json(covid_data, geojson, location):
     data_label = ['cases', 'deaths']
-    colors = ['red', 'green', 'blue']
     for feature in geojson['features']:
         location_identifier = int(feature['properties']['STATE'])
         if location != 'United States':
             location_identifier = int(feature['properties']['STATE'] + feature['properties']['COUNTY'])
         for label in data_label:
             try:
-                feature['properties'][label] = str(covid_data.loc[covid_data['fips'] ==
-                                                                  location_identifier, label].values[-1])
-                # color_dict = set_color_from_data(feature['properties'][label])
-                # for color in colors:
-                #     feature['properties'][f'{label}{color}color'] = color_dict[f'{color}']
+                feature['properties'][label] = covid_data.loc[covid_data['fips'] ==
+                                                                  location_identifier, label].values[-1]
                 feature['properties'][f'{label}color'] = set_color_from_data(feature['properties'][label])
             except IndexError:
-                # for color in colors:
-                #     feature['properties'][f'{label}{color}color'] = '255'
-                feature['properties'][f'{label}color'] = COLORS_LISTS[0]
+                feature['properties'][f'{label}color'] = COLORS_DICT[0]
                 continue
     return geojson
 
 
 states_json_with_extra_data = add_covid_data_to_json(state_data_filtered, states_geojson, 'United States')
 print(states_json_with_extra_data['features'][10]['properties'])
-# print(type(states_json_with_extra_data))
+print(type(states_json_with_extra_data))
 
+gdf = gpd.GeoDataFrame.from_features(states_json_with_extra_data['features'])
+# print(gdf.keys())
+print('{:,}'.format(int(gdf.loc[gdf["STATE"] == "13", "cases"].values[0])))
+print(gdf.dtypes)
 
-counties_json_with_extra_data = add_covid_data_to_json(county_data_filtered, counties_json, 'Alabama')
-print(counties_json_with_extra_data['features'][0]['properties'])
+# counties_json_with_extra_data = add_covid_data_to_json(county_data_filtered, counties_json, 'Alabama')
+# print(counties_json_with_extra_data['features'][0]['properties'])
 # print(type(counties_json_with_extra_data))
 
 # def load_geo_centers(url):

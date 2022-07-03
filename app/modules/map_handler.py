@@ -1,5 +1,6 @@
 import pydeck as pdk
 from re import search
+import geopandas as gpd
 
 
 def set_map_state(df, location='United States'):
@@ -11,7 +12,6 @@ def set_map_state(df, location='United States'):
             if location != 'United States':
                 state = f"{int(df['state'][index]):02d}"
                 zoom = 5.5
-                # pitch = 30
             return {'location': location,
                     'state': state,
                     'lat': df.lat[index],
@@ -21,13 +21,20 @@ def set_map_state(df, location='United States'):
 
 
 def create_map(geojson_data, map_state):
-    state = map_state['state']
-    if state is not None:
-        features = []
-        for feature in geojson_data['features']:
-            if feature['properties']['STATE'] == state:
-                features.append(feature)
-        geojson_data = features
+    # TODO: reimplement states
+    # state = map_state['state']
+    # if state is not None:
+    #     features = []
+    #     for feature in geojson_data['features']:
+    #         if feature['properties']['STATE'] == state:
+    #             features.append(feature)
+    #     geojson_data = {
+    #         'type': 'FeatureCollection',
+    #         'features': features
+    #     }
+    #     geojson_data = features
+
+    geodata = gpd.GeoDataFrame.from_features(geojson_data['features'])
 
     view_state = pdk.ViewState(latitude=map_state['lat'],
                                longitude=map_state['lon'],
@@ -38,24 +45,39 @@ def create_map(geojson_data, map_state):
 
     geojson_layer = pdk.Layer('GeoJsonLayer',
                               geojson_data,
+                              id='jsonlayer',
                               opacity=0.5,
                               stroked=True,
                               filled=True,
                               extruded=True,
                               wireframe=True,
-                              # get_elevation='some_data_if_using_this',
                               get_fill_color='properties.casescolor',
+                              get_line_color=[255, 255, 255],
+                              pickable=False
+                              )
+
+    tooltip_layer = pdk.Layer('GeoJsonLayer',
+                              geodata,
+                              id='tooltiplayer',
+                              opacity=0,
+                              stroked=True,
+                              filled=True,
+                              extruded=True,
+                              wireframe=True,
                               get_line_color=[255, 255, 255],
                               pickable=True
                               )
 
-    layers = [geojson_layer]
+    layers = [geojson_layer, tooltip_layer]
 
     # TODO: add map_style argument?
     covid_map = pdk.Deck(map_provider='mapbox',
                          layers=layers,
                          # map_style=a_map_style_if_desired,
-                         initial_view_state=view_state
+                         initial_view_state=view_state,
+                         tooltip={
+                             'text': '{NAME}\nCases: {cases}\nDeaths: {deaths}'
+                         }
                          )
 
     return covid_map
