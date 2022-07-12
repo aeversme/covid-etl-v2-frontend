@@ -70,15 +70,17 @@ st.sidebar.markdown('_Check to see current rolling averages:_')
 if st.sidebar.checkbox('Rolling averages'):
     metric_type = 'rolling'
 
+# TODO: modify rolling metrics: cases & deaths for that day, plus avg per 100k for each
 display_metrics(metric_type)
 
 location = st.sidebar.selectbox('View data by state:', geo_centers)
 map_state = mh.set_map_state(geo_centers, location)
 covid_data, geo_json = data_to_map(metric_type, location)
-geo_json_with_data = dh.add_covid_data_to_json(covid_data, geo_json, location)
+geo_json_with_data = dh.add_covid_data_to_json(covid_data, geo_json, location, metric_type)
 covid_map = mh.create_map(geo_json_with_data, map_state)
 
 st.markdown(md.map_markdown)
+# TODO: why does the page scroll when the map zooms in or out with mouse wheel? is there an alternative zoom ability?
 st.pydeck_chart(covid_map)
 st.markdown(md.map_credit)
 
