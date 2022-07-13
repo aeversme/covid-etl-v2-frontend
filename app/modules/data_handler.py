@@ -23,6 +23,7 @@ def import_data(url, filter_df=True):
     return df
 
 
+# TODO: add transform for US 'geoid' to be last two digits - check format in counties, probably a different transform
 def filter_data(df):
     df['date'] = pd.to_datetime(df['date'])
     labels = ['fips', 'cases', 'deaths']
@@ -61,7 +62,7 @@ def format_metric(metric, metric_type):
 
 
 def set_color_from_data(data, label='cases'):
-    # TODO: add parameter for metric_type and ranges for national and state daily cases (or rolling averages?)
+    # TODO: add parameter for metric_type and ranges for state daily cases
     data_range = [1, 5e+05, 1.5e+06, 3e+06, 6e+06]
     if label == 'deaths':
         data_range = [1, 2e+04, 4e+04, 6e+04, 8e+04]
@@ -74,20 +75,30 @@ def set_color_from_data(data, label='cases'):
 
 
 def add_covid_data_to_json(covid_data, geojson, location, metric_type):
-    # TODO: add the labels for rolling averages (cases & deaths remain the same) <-- assign column names to simple
-    #  variables to keep JSON clean (i.e. rolling_cases = 'cases_avg_per_100k')
     data_label = ['cases', 'deaths']
-    # TODO: variable for metric_type
+
+    is_us = True
+    if location != 'United States':
+        is_us = False
+
+    location_data_column = None
+    if 'fips' in covid_data.keys():
+        location_data_column = covid_data['fips']
+    elif 'geoid' in covid_data.keys():
+        location_data_column = covid_data['geoid']
+    else:
+        print('Location header key not found.')
+
     for feature in geojson['features']:
         location_identifier = int(feature['properties']['STATE'])
-        if location != 'United States':
+        if not is_us:
             location_identifier = int(feature['properties']['STATE'] + feature['properties']['COUNTY'])
         for label in data_label:
             try:
                 if label in covid_data.keys():
                     # TODO: 'fips' for 'total' data, last two chars of 'geoid' for 'rolling' <-- for US data,
                     #  not for counties
-                    feature['properties'][label] = '{:,}'.format(covid_data.loc[covid_data['fips'] ==
+                    feature['properties'][label] = '{:,}'.format(covid_data.loc[location_data_column ==
                                                                                 location_identifier, label].values[-1])
                     feature['properties'][f'{label}color'] = set_color_from_data(feature['properties'][label])
             except IndexError:

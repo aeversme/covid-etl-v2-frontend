@@ -71,6 +71,7 @@ def create_map(geojson_data, map_state):
     layers = [geojson_layer, tooltip_layer]
 
     # TODO: add map_style argument?
+    # TODO: add different tooltip text for rolling avg map
     covid_map = pdk.Deck(map_provider='mapbox',
                          layers=layers,
                          # map_style=a_map_style_if_desired,
