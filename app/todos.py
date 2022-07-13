@@ -1,6 +1,8 @@
-# TODO: project covid data onto map - start with state data, then county data
+# TODO: get county data to work on map
 
-# TODO: tooltip and legend for map
+# TODO: get rolling averages working again
+
+# TODO: legend for map
 
 # TODO: have metrics reflect state data when a state is selected
 
