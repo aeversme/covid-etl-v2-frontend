@@ -21,20 +21,15 @@ def set_map_state(df, location='United States'):
 
 
 def create_map(geojson_data, map_state):
-    # TODO: reimplement states
-    # state = map_state['state']
-    # if state is not None:
-    #     features = []
-    #     for feature in geojson_data['features']:
-    #         if feature['properties']['STATE'] == state:
-    #             features.append(feature)
-    #     geojson_data = {
-    #         'type': 'FeatureCollection',
-    #         'features': features
-    #     }
-    #     geojson_data = features
+    state = map_state['state']
+    if state is not None:
+        features = []
+        for feature in geojson_data['features']:
+            if feature['properties']['STATE'] == state:
+                features.append(feature)
+        geojson_data = features
 
-    geodata = gpd.GeoDataFrame.from_features(geojson_data['features'])
+    geodata = gpd.GeoDataFrame.from_features(geojson_data)
 
     view_state = pdk.ViewState(latitude=map_state['lat'],
                                longitude=map_state['lon'],
