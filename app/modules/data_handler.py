@@ -61,11 +61,36 @@ def format_metric(metric, metric_type):
     return '{:,}'.format(metric)
 
 
-def set_color_from_data(data, label='cases'):
-    # TODO: add parameter for metric_type and ranges for state daily cases
-    data_range = [1, 5e+05, 1.5e+06, 3e+06, 6e+06]
-    if label == 'deaths':
-        data_range = [1, 2e+04, 4e+04, 6e+04, 8e+04]
+def format_location_identifier(feature, loc, met_type):
+    if met_type == 'rolling' and loc != 'United States':
+        # counties in state map, rolling
+        location_id = 'USA-' + feature['properties']['STATE'] + feature['properties']['COUNTY']
+    elif loc != 'United States':
+        # counties in state map, totals
+        location_id = int(feature['properties']['STATE'] + feature['properties']['COUNTY'])
+    elif met_type == 'rolling':
+        # states in US map, rolling
+        location_id = 'USA-' + feature['properties']['STATE']
+    else:
+        # states in US map, totals
+        location_id = int(feature['properties']['STATE'])
+    return location_id
+
+
+def set_color_from_data(data, is_us, met_type):
+    if met_type == 'rolling' and not is_us:
+        # counties in state map, rolling
+        data_range = [1, 5, 10, 15, 20]
+    elif not is_us:
+        # counties in state map, totals
+        data_range = [1, 3e+03, 5e+04, 3e+05, 1e+06]
+    elif met_type == 'rolling':
+        # states in US map, rolling
+        data_range = [1, 5, 10, 15, 20]
+    else:
+        # states in US map, totals
+        data_range = [1, 5e+05, 1.5e+06, 3e+06, 6e+06]
+
     color = COLORS_DICT[5]
     data = ''.join(data.split(','))
     for i, num in enumerate(data_range):
@@ -76,11 +101,14 @@ def set_color_from_data(data, label='cases'):
 
 def add_covid_data_to_json(covid_data, geojson, location, metric_type):
     data_label = ['cases', 'deaths']
+    if metric_type == 'rolling':
+        data_label = ['cases_avg_per_100k', 'deaths_avg_per_100k']
 
     is_us = True
     if location != 'United States':
         is_us = False
 
+    # TODO: this feels cumbersome
     location_data_column = None
     if 'fips' in covid_data.keys():
         location_data_column = covid_data['fips']
@@ -90,17 +118,20 @@ def add_covid_data_to_json(covid_data, geojson, location, metric_type):
         print('Location header key not found.')
 
     for feature in geojson['features']:
-        location_identifier = int(feature['properties']['STATE'])
+        # TODO: function here to transform location_identifier into same format as 'fips' or 'geoid' columns in
+        #  covid_data
+        # location_identifier = int(feature['properties']['STATE'])
+        location_identifier = format_location_identifier(feature, location, metric_type)
         if not is_us:
             location_identifier = int(feature['properties']['STATE'] + feature['properties']['COUNTY'])
         for label in data_label:
             try:
                 if label in covid_data.keys():
-                    # TODO: 'fips' for 'total' data, last two chars of 'geoid' for 'rolling' <-- for US data,
-                    #  not for counties
                     feature['properties'][label] = '{:,}'.format(covid_data.loc[location_data_column ==
                                                                                 location_identifier, label].values[-1])
-                    feature['properties'][f'{label}color'] = set_color_from_data(feature['properties'][label])
+                    feature['properties'][f'{label}color'] = set_color_from_data(feature['properties'][label],
+                                                                                 is_us,
+                                                                                 metric_type)
             except IndexError:
                 feature['properties'][f'{label}color'] = COLORS_DICT[0]
                 continue

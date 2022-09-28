@@ -79,11 +79,11 @@ covid_data, geo_json = data_to_map(metric_type, location)
 geo_json_with_data = dh.add_covid_data_to_json(covid_data, geo_json, location, metric_type)
 
 # TODO: rolling averages with a state selected locks up the app
-covid_map = mh.create_map(geo_json_with_data, map_state)
+covid_map = mh.create_map(geo_json_with_data, map_state, metric_type)
 
 st.markdown(md.map_markdown)
 # TODO: why does the page scroll when the map zooms in or out with mouse wheel? is there an alternative zoom ability?
 st.pydeck_chart(covid_map)
 st.markdown(md.map_credit)
 
-st.sidebar.markdown('_App last updated: July 27, 2022_')
+st.sidebar.markdown('_App last updated: September 26, 2022_')
